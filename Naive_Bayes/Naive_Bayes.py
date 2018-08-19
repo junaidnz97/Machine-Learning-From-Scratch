@@ -33,9 +33,9 @@ def count_words(features,output):
 
 def calculate_probabilities(d,features,output):
 	x=defaultdict(float)
-
+	sumi=sum([d[j] for j in set(output)])
 	for i in output:
-		x[i]=(d[i]*1.0)/(sum([d[j] for j in set(output)]))
+		x[i]=(d[i]*1.0)/(sumi)
 
 	for i,j in enumerate(set(output)):
 		for k in range(0,len(features)):
