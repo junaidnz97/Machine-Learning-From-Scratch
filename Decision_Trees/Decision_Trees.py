@@ -1,12 +1,10 @@
-'''
-		wrote function for train
-'''
 from math import log
 import numpy as np
 
 class Node:
 	def __init__(self):
-		self.root=None
+		self.split_column=None
+		self.split_value=None
 		self.left=None
 		self.right=None
 		
@@ -17,13 +15,14 @@ class decision_tree:
 		self.head=Node()
 		self.max_depth=3
 		self.root_entropy=1
+		self.min_samples=0
 
 	def train(self,x_train,y_train):
 		self.head=self.build(self.head,x_train,y_train,self.root_entropy,1) 
 	
 	def build(self,current_node,x_train,y_train,entropy_parent,cur_depth):
-		if(cur_depth>self.max_depth or len(x_train)==0):
-			return Node()	
+		if(cur_depth>self.max_depth or len(x_train)<=self.min_samples ):
+			return None	
 		row_length=len(x_train)
 		col_length=len(x_train[0])
 		count={}
@@ -65,11 +64,17 @@ class decision_tree:
 			information_gain[i]=entropy_parent-weighted_avg[i]
 		max_key=max(information_gain,key=information_gain.get)
 		split_set=set(x_train[:,max_key])
+		split_value=None
+		for i in split_set:
+			split_value=i
+			break
+		print(information_gain)
 		x_train_left=[]
 		x_train_right=[]
 		y_train_left=[]
 		y_train_right=[]
-		for k,i in enumerate(split_set):
+		#print(information_gain)
+		'''for k,i in enumerate(split_set):
 			split_data=[]
 			for j in range(0,row_length):
 				if(x_train[j,max_key]==i):
@@ -79,12 +84,26 @@ class decision_tree:
 				y_train_left=y_train[split_data]
 			else:
 				x_train_right=x_train[split_data]
-				y_train_right=y_train[split_data]
-		print(entropy)
+				y_train_right=y_train[split_data]'''
+
+		split_data_left=[]
+		split_data_right=[]
+		for j in range(0,row_length):
+			if(x_train[j,max_key]==split_value):
+				split_data_left.append(j)
+			else:
+				split_data_right.append(j)
+
+		x_train_left=x_train[split_data_left]
+		y_train_left=y_train[split_data_left]		
+		x_train_right=x_train[split_data_right]
+		y_train_right=y_train[split_data_right]
+		current_node.split_column=max_key
+		current_node.split_value=split_value
 		current_node.left=Node()
 		current_node.right=Node()
-		current_node.left=self.build(current_node.left,x_train_left,y_train_left,entropy_parent,cur_depth+1)
-		current_node.right=self.build(current_node.right,x_train_right,y_train_right,entropy_parent,cur_depth+1)
+		current_node.left=self.build(current_node.left,x_train_left,y_train_left,information_gain[max_key],cur_depth+1)
+		current_node.right=self.build(current_node.right,x_train_right,y_train_right,information_gain[max_key],cur_depth+1)
 		return current_node
 
 
